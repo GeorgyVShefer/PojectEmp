@@ -1,0 +1,28 @@
+version: '3.8'  # Версия схемы docker-compose
+
+services:
+  postgres:  # Настройки сервиса PostgreSQL
+    image: postgres:13  # Используемый Docker образ PostgreSQL версии 13
+    container_name: postgres_emp  # Имя контейнера для PostgreSQL (postgres_emp)
+    environment:  # Переменные окружения для PostgreSQL
+      POSTGRES_DB: employee_db  # Имя базы данных (employee_db)
+      POSTGRES_USER: postgres  # Имя пользователя базы данных (postgres)
+      POSTGRES_PASSWORD: root  # Пароль пользователя базы данных (root)
+    ports:
+      - "5432:5432"  # Проброс портов: порт на хосте -> порт в контейнере
+    volumes:
+      - postgres_data:/var/lib/postgresql/data  # Монтируем том для данных PostgreSQL
+
+  app:  # Настройки сервиса Spring Boot приложения
+    build: .  # Сборка Docker образа из текущего контекста (Dockerfile в текущей директории)
+    ports:
+      - "8085:8085"  # Проброс портов: порт на хосте -> порт в контейнере
+    environment:  # Переменные окружения для Spring Boot приложения
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/employee_db  # URL для подключения к PostgreSQL
+      SPRING_DATASOURCE_USERNAME: postgres  # Имя пользователя базы данных PostgreSQL (postgres)
+      SPRING_DATASOURCE_PASSWORD: root  # Пароль пользователя базы данных PostgreSQL (root)
+    depends_on:
+      - postgres  # Зависимость от сервиса PostgreSQL (ожидание его запуска перед запуском этого сервиса)
+
+volumes:
+  postgres_data:  # Определение тома Docker для данных PostgreSQL
